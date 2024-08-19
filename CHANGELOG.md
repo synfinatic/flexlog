@@ -1,0 +1,5 @@
+# Changelog
+
+## v0.0.2 - 2024-08-19
+
+ * Initial release
