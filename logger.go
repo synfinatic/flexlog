@@ -8,24 +8,28 @@ import (
 	"strings"
 )
 
+type NewLoggerFunc func(w io.Writer, addSource bool, level slog.Leveler, color bool) (slog.Handler, *slog.LevelVar)
+
 // Our logger which wraps slog.Logger and implements CustomLogger
 type Logger struct {
-	logger    *slog.Logger
-	addSource bool
-	color     bool
-	level     *slog.LevelVar
-	writer    io.Writer
+	logger       *slog.Logger
+	addSource    bool
+	color        bool
+	level        *slog.LevelVar
+	writer       io.Writer
+	createLogger NewLoggerFunc
 }
 
 // NewLoggerFunc creates a new Logger
 func NewLogger(f NewLoggerFunc, w io.Writer, addSource bool, level slog.Leveler, color bool) *Logger {
 	handle, lvl := f(w, addSource, level, color)
 	return &Logger{
-		logger:    slog.New(handle),
-		addSource: addSource,
-		color:     color,
-		level:     lvl,
-		writer:    w,
+		logger:       slog.New(handle),
+		addSource:    addSource,
+		color:        color,
+		level:        lvl,
+		writer:       w,
+		createLogger: f,
 	}
 }
 
@@ -96,7 +100,7 @@ func (l *Logger) WithGroup(name string) *slog.Logger {
 
 // Copy returns a copy of the Logger current Logger
 func (l *Logger) Copy() FlexLogger {
-	return NewLogger(CreateLogger, l.writer, l.addSource, l.level, l.color)
+	return NewLogger(l.createLogger, l.writer, l.addSource, l.level, l.color)
 }
 
 // Writer returns the writer for the logger
@@ -155,8 +159,8 @@ func (l *Logger) SetReportCaller(reportCaller bool) {
 		return // do nothing
 	}
 	l.addSource = reportCaller
-	handler, _ := CreateLogger(l.writer, l.addSource, slog.LevelWarn, l.color)
-	logger.SetLogger(slog.New(handler))
+	handler, _ := l.createLogger(l.writer, l.addSource, slog.LevelWarn, l.color)
+	l.SetLogger(slog.New(handler))
 }
 
 // GetLevel returns the current log level

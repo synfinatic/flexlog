@@ -14,11 +14,14 @@ const (
 	FrameMarker = "__skip_frames"
 )
 
+var colorize bool = false
+
 // NewConsole creates a new slog.Handler for the ConsoleHandler, which wraps tint.NewHandler
 // with some customizations.
 func NewConsole(w io.Writer, addSource bool, level slog.Leveler, color bool) (slog.Handler, *slog.LevelVar) {
 	lvl := new(slog.LevelVar)
 	lvl.Set(level.Level())
+	colorize = color
 
 	opts := tint.Options{
 		Level:       lvl,
@@ -80,7 +83,7 @@ func replaceAttrConsole(groups []string, a slog.Attr) slog.Attr {
 		level := a.Value.Any().(slog.Level)
 		levelColor, ok := LevelColorsMap[level]
 		if ok {
-			a.Value = slog.StringValue(levelColor.String(logger.Color()))
+			a.Value = slog.StringValue(levelColor.String(colorize))
 		}
 	}
 
