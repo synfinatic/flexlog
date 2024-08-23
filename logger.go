@@ -35,37 +35,40 @@ func NewLogger(f NewLoggerFunc, w io.Writer, addSource bool, level slog.Leveler,
 
 // Debug logs a message at the debug level
 func (l *Logger) Debug(msg string, args ...any) {
-	l.logger.Debug(msg, args...)
+	ctx := context.Background()
+	l.LogWithSource(ctx, slog.LevelDebug, StackFrames, msg, args...)
 }
 
 // DebugContext logs a message at the debug level with context
 func (l *Logger) DebugContext(ctx context.Context, msg string, args ...any) {
-	l.logger.DebugContext(ctx, msg, args...)
+	l.LogWithSource(ctx, slog.LevelDebug, StackFrames, msg, args...)
 }
 
 // Error logs a message at the error level
 func (l *Logger) Error(msg string, args ...any) {
-	l.logger.Error(msg, args...)
+	ctx := context.Background()
+	l.LogWithSource(ctx, slog.LevelError, StackFrames, msg, args...)
 }
 
 // ErrorContext logs a message at the error level with context
 func (l *Logger) ErrorContext(ctx context.Context, msg string, args ...any) {
-	l.logger.ErrorContext(ctx, msg, args...)
+	l.LogWithSource(ctx, slog.LevelError, StackFrames, msg, args...)
 }
 
 // Info logs a message at the info level
 func (l *Logger) Info(msg string, args ...any) {
-	l.logger.Info(msg, args...)
+	ctx := context.Background()
+	l.LogWithSource(ctx, slog.LevelInfo, StackFrames, msg, args...)
 }
 
 // InfoContext logs a message at the info level with context
 func (l *Logger) InfoContext(ctx context.Context, msg string, args ...any) {
-	l.logger.InfoContext(ctx, msg, args...)
+	l.LogWithSource(ctx, slog.LevelInfo, StackFrames, msg, args...)
 }
 
 // Log logs a message at the specified level with the included context
 func (l *Logger) Log(ctx context.Context, level slog.Level, msg string, args ...any) {
-	l.logger.Log(ctx, level, msg, args...)
+	l.LogWithSource(ctx, level, StackFrames, msg, args...)
 }
 
 // LogAttrs logs a message at the specified level with the included context and attributes
@@ -75,12 +78,13 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg string, att
 
 // Warn logs a message at the warn level
 func (l *Logger) Warn(msg string, args ...any) {
-	l.logger.Warn(msg, args...)
+	ctx := context.Background()
+	l.LogWithSource(ctx, slog.LevelWarn, StackFrames, msg, args...)
 }
 
 // WarnContext logs a message at the warn level with context
 func (l *Logger) WarnContext(ctx context.Context, msg string, args ...any) {
-	l.logger.WarnContext(ctx, msg, args...)
+	l.LogWithSource(ctx, slog.LevelWarn, StackFrames, msg, args...)
 }
 
 // Handler returns the slog.Handler for the logger
@@ -159,7 +163,7 @@ func (l *Logger) SetReportCaller(reportCaller bool) {
 		return // do nothing
 	}
 	l.addSource = reportCaller
-	handler, _ := l.createLogger(l.writer, l.addSource, slog.LevelWarn, l.color)
+	handler, _ := l.createLogger(l.writer, l.addSource, l.level, l.color)
 	l.SetLogger(slog.New(handler))
 }
 
